@@ -5,7 +5,7 @@ on:
     branches:
       - main
     tags:
-      - 'v*' # Trigger on version tags, e.g., v1.0.0
+      - 'v*'  # Trigger on version tags, e.g., v1.0.0
 
 jobs:
   build:
@@ -27,7 +27,7 @@ jobs:
       - name: Get latest version tag
         id: get_version
         run: |
-          # Get the latest tag from the repository
+          # Get the latest tag from the repository (or default to v1.0.0 if no tags are found)
           VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.0")
           echo "Latest version: $VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
@@ -35,7 +35,7 @@ jobs:
       - name: Increment version
         id: increment_version
         run: |
-          # Extract the version numbers from the latest version (remove 'v' prefix)
+          # Extract version without the 'v' prefix
           VERSION_WITHOUT_V="${{ env.VERSION:1 }}"
           IFS='.' read -r -a version_parts <<< "$VERSION_WITHOUT_V"
           major=${version_parts[0]}
