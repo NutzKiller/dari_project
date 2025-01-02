@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*' # Trigger on version tags, e.g., v1.0.0
 
 jobs:
   build:
@@ -22,35 +24,36 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Read current version
+      - name: Get latest version tag
         id: get_version
         run: |
-          # Check if the version file exists
-          if [[ -f version.txt ]]; then
-            VERSION=$(cat version.txt)
-          else
-            VERSION="1.0.0" # Default if no version file exists
-          fi
-          echo "Current version: $VERSION"
+          # Get the latest tag from the repository
+          VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.0")
+          echo "Latest version: $VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Increment version
         id: increment_version
         run: |
-          # Increment the version number
-          IFS='.' read -r -a version_parts <<< "${{ env.VERSION }}"
+          # Extract the version numbers from the latest version
+          IFS='.' read -r -a version_parts <<< "${{ env.VERSION#v}}"
+          major=${version_parts[0]}
+          minor=${version_parts[1]}
           patch=${version_parts[2]}
-          patch=$((patch + 1)) # Increment the patch version
-          new_version="${version_parts[0]}.${version_parts[1]}.$patch"
+          
+          # Increment the patch version
+          patch=$((patch + 1))
+          new_version="v$major.$minor.$patch"
+          
+          # Output the new version
           echo "New version: $new_version"
           echo "VERSION=$new_version" >> $GITHUB_ENV
 
-      - name: Update version file
+      - name: Create and push new version tag
         run: |
-          echo ${{ env.VERSION }} > version.txt
-          git add version.txt
-          git commit -m "Bump version to ${{ env.VERSION }}"
-          git push
+          # Create a new version tag and push it
+          git tag ${{ env.VERSION }}
+          git push origin ${{ env.VERSION }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
