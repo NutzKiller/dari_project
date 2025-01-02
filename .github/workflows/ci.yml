@@ -35,18 +35,16 @@ jobs:
       - name: Increment version
         id: increment_version
         run: |
-          # Extract version without the 'v' prefix
-          VERSION_WITHOUT_V="${{ env.VERSION:1 }}"
+          VERSION="${{ env.VERSION }}"
+          # Remove 'v' prefix
+          VERSION_WITHOUT_V="${VERSION:1}"
+          # Increment patch version (split by dots)
           IFS='.' read -r -a version_parts <<< "$VERSION_WITHOUT_V"
           major=${version_parts[0]}
           minor=${version_parts[1]}
-          patch=${version_parts[2]}
-          
-          # Increment the patch version
-          patch=$((patch + 1))
+          patch=$((version_parts[2] + 1))
+
           new_version="v$major.$minor.$patch"
-          
-          # Output the new version
           echo "New version: $new_version"
           echo "VERSION=$new_version" >> $GITHUB_ENV
 
