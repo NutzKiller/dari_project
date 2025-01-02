@@ -35,8 +35,9 @@ jobs:
       - name: Increment version
         id: increment_version
         run: |
-          # Extract the version numbers from the latest version
-          IFS='.' read -r -a version_parts <<< "${{ env.VERSION#v}}"
+          # Extract the version numbers from the latest version (remove 'v' prefix)
+          VERSION_WITHOUT_V="${{ env.VERSION:1 }}"
+          IFS='.' read -r -a version_parts <<< "$VERSION_WITHOUT_V"
           major=${version_parts[0]}
           minor=${version_parts[1]}
           patch=${version_parts[2]}
