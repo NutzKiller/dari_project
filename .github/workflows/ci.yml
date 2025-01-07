@@ -88,5 +88,6 @@ jobs:
             sudo systemctl start docker && \
             sudo usermod -aG docker \$USER && newgrp docker && \
             docker --version && \
-            cd /home/${{ secrets.EC2_USER }} && docker build -t weather-app . && docker run -d weather-app"
+            docker pull nutzkiller/weather-app:${{ env.VERSION }} && \
+            docker run -d nutzkiller/weather-app:${{ env.VERSION }}"
           rm -f key.pem
