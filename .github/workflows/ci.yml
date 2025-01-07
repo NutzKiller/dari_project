@@ -50,9 +50,14 @@ jobs:
 
       - name: Create and push new version tag
         run: |
-          # Create a new version tag and push it
-          git tag ${{ env.VERSION }}
-          git push origin ${{ env.VERSION }}
+          # Check if the tag already exists
+          if git rev-parse ${{ env.VERSION }} >/dev/null 2>&1; then
+            echo "Tag ${{ env.VERSION }} already exists. Skipping tag creation."
+          else
+            # Create a new version tag and push it
+            git tag ${{ env.VERSION }}
+            git push origin ${{ env.VERSION }}
+          fi
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
