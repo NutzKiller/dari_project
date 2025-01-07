@@ -30,6 +30,7 @@ jobs:
           VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.${{ github.run_number }}")
           echo "Latest version: $VERSION"
           echo "VERSION=$VERSION" > version.txt
+
       - name: Upload version artifact
         uses: actions/upload-artifact@v3
         with:
@@ -51,6 +52,7 @@ jobs:
             git push origin ${{ env.VERSION }}
           else
             echo "Tag ${{ env.VERSION }} already exists on remote. Skipping tag creation."
+          fi
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
