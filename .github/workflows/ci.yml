@@ -50,13 +50,14 @@ jobs:
 
       - name: Create and push new version tag
         run: |
-          # Check if the tag already exists
-          if git rev-parse --verify ${{ env.VERSION }} >/dev/null 2>&1; then
-            echo "Tag ${{ env.VERSION }} already exists. Skipping tag creation."
-          else
-            # Create a new version tag and push it
+          # Check if the tag already exists on the remote
+          TAG_EXISTS=$(git ls-remote --tags origin "refs/tags/${{ env.VERSION }}")
+          if [ -z "$TAG_EXISTS" ]; then
+            # If tag does not exist on remote, create and push it
             git tag ${{ env.VERSION }}
             git push origin ${{ env.VERSION }}
+          else
+            echo "Tag ${{ env.VERSION }} already exists on remote. Skipping tag creation."
           fi
 
       - name: Build and push Docker image
