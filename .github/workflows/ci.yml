@@ -86,7 +86,7 @@ jobs:
               echo 'Unsupported OS'; exit 1; \
             fi && \
             sudo systemctl start docker && \
-            sudo usermod -aG docker \$USER && sudo chmod 666 /var/run/docker.sock && \
+            sudo usermod -aG docker \$USER && newgrp docker && \
             docker --version && \
             cd /home/${{ secrets.EC2_USER }} && docker build -t weather-app . && docker run -d weather-app"
           rm -f key.pem
