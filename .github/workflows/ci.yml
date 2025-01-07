@@ -27,29 +27,22 @@ jobs:
       - name: Get latest version tag
         id: get_version
         run: |
-          VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.0")
+          VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.${{ github.run_number }}")
           echo "Latest version: $VERSION"
           echo "VERSION=$VERSION" > version.txt
         # Upload the version as an artifact
-        - name: Upload version artifact
-          uses: actions/upload-artifact@v2
-          with:
-            name: version
-            path: version.txt
+      - name: Upload version artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: version
+          path: version.txt
 
-      - name: Increment version
+      - name: Increment version using GitHub Actions run number
         id: increment_version
         run: |
-          VERSION="${{ env.VERSION }}"
-          VERSION_WITHOUT_V="${VERSION:1}"
-          IFS='.' read -r -a version_parts <<< "$VERSION_WITHOUT_V"
-          major=${version_parts[0]}
-          minor=${version_parts[1]}
-          patch=$((version_parts[2] + 1))
-
-          new_version="v$major.$minor.$patch"
-          echo "New version: $new_version"
-          echo "VERSION=$new_version" >> $GITHUB_ENV
+          VERSION="v1.0.${{ github.run_number }}"
+          echo "New version: $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Create and push new version tag
         run: |
@@ -109,4 +102,5 @@ jobs:
             docker --version && \
             docker pull nutzkiller/weather-app:${{ env.VERSION }} && \
             docker run -d nutzkiller/weather-app:${{ env.VERSION }}"
+
           rm -f key.pem
