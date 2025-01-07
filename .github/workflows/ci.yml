@@ -76,7 +76,7 @@ jobs:
             elif [ -f /etc/redhat-release ]; then \
               sudo yum update -y && sudo yum install -y docker; \
             elif [ -f /etc/system-release ] && grep -q 'Amazon Linux' /etc/system-release; then \
-              sudo amazon-linux-extras install -y docker; \
+              sudo yum update -y && sudo yum install -y docker; \
             else \
               echo 'Unsupported OS'; exit 1; \
             fi && \
