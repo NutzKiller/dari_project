@@ -30,11 +30,11 @@ jobs:
           VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.${{ github.run_number }}")
           echo "Latest version: $VERSION"
           echo "VERSION=$VERSION" > version.txt
-        - name: Upload version artifact
-          uses: actions/upload-artifact@v2
-          with:
-            name: version
-            path: version.txt
+      - name: Upload version artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: version
+          path: version.txt
 
       - name: Increment version using GitHub Actions run number
         id: increment_version
