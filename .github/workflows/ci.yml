@@ -64,6 +64,11 @@ jobs:
             nutzkiller/weather-app:latest
             nutzkiller/weather-app:${{ env.VERSION }}
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
       - name: Deploy to EC2
         run: |
           echo "${{ secrets.EC2_KEY }}" > key.pem
@@ -81,7 +86,7 @@ jobs:
               echo 'Unsupported OS'; exit 1; \
             fi && \
             sudo systemctl start docker && \
-            sudo usermod -aG docker \$USER && newgrp docker && \
+            sudo usermod -aG docker \$USER && sudo chmod 666 /var/run/docker.sock && \
             docker --version && \
             cd /home/${{ secrets.EC2_USER }} && docker build -t weather-app . && docker run -d weather-app"
           rm -f key.pem
