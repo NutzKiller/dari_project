@@ -30,12 +30,6 @@ jobs:
           VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.${{ github.run_number }}")
           echo "Latest version: $VERSION"
           echo "VERSION=$VERSION" > version.txt
-        # Upload the version as an artifact
-      - name: Upload version artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: version
-          path: version.txt
 
       - name: Increment version using GitHub Actions run number
         id: increment_version
@@ -70,20 +64,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Download version artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: version
-          path: .
-
-      - name: Read version
-        id: read_version
-        run: |
-          VERSION=$(cat version.txt)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
       - name: Deploy to EC2
         run: |
+          VERSION="v1.0.${{ github.run_number }}"
           echo "${{ secrets.EC2_KEY }}" > key.pem
           chmod 600 key.pem
           ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
@@ -100,7 +83,7 @@ jobs:
             sudo systemctl start docker && \
             sudo usermod -aG docker \$USER && newgrp docker && \
             docker --version && \
-            docker pull nutzkiller/weather-app:${{ env.VERSION }} && \
-            docker run -d nutzkiller/weather-app:${{ env.VERSION }}"
+            docker pull nutzkiller/weather-app:${{ VERSION }} && \
+            docker run -d nutzkiller/weather-app:${{ VERSION }}"
 
           rm -f key.pem
