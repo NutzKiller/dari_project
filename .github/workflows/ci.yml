@@ -29,7 +29,13 @@ jobs:
         run: |
           VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.0")
           echo "Latest version: $VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" > version.txt
+        # Upload the version as an artifact
+        - name: Upload version artifact
+          uses: actions/upload-artifact@v2
+          with:
+            name: version
+            path: version.txt
 
       - name: Increment version
         id: increment_version
@@ -53,7 +59,6 @@ jobs:
             git push origin ${{ env.VERSION }}
           else
             echo "Tag ${{ env.VERSION }} already exists on remote. Skipping tag creation."
-          fi
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
@@ -69,6 +74,21 @@ jobs:
     needs: build
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download version artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: version
+          path: .
+
+      - name: Read version
+        id: read_version
+        run: |
+          VERSION=$(cat version.txt)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Deploy to EC2
         run: |
           echo "${{ secrets.EC2_KEY }}" > key.pem
