@@ -24,25 +24,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Get latest version tag
-        id: get_version
-        run: |
-          VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.${{ github.run_number }}")
-          echo "Latest version: $VERSION"
-          echo "$VERSION" > version.txt  # This writes the version to version.txt
-
-      - name: Upload version artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: version
-          path: version.txt  # Ensure this is the correct artifact path
-
       - name: Increment version using GitHub Actions run number
         id: increment_version
         run: |
           VERSION="v1.0.${{ github.run_number }}"
           echo "New version: $VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Save version to the environment
 
       - name: Create and push new version tag
         run: |

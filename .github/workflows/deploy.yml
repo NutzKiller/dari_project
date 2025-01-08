@@ -14,17 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Download version artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: version  # Ensure this matches the artifact name
-          path: ./  # Downloads artifact into the current directory
-
-      - name: Read version
+      - name: Read version from environment
         id: read_version
         run: |
-          VERSION=$(cat version.txt)  # Read the version from version.txt
-          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Set the version as environment variable
+          VERSION="${{ env.VERSION }}"  # Use the version from the environment variable set in Build Pipeline
+          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Set the version as an environment variable
 
       - name: Deploy to EC2
         run: |
