@@ -38,6 +38,12 @@ jobs:
             sudo systemctl start docker && \
             sudo usermod -aG docker \$USER && newgrp docker && \
             docker --version && \
+            # Stop any container using port 5000 if it exists
+            EXISTING_CONTAINER=\$(sudo docker ps -q -f "publish=5000"); \
+            if [ -n "\$EXISTING_CONTAINER" ]; then \
+              echo 'Stopping existing container using port 5000...'; \
+              sudo docker stop \$EXISTING_CONTAINER; \
+            fi && \
             docker pull nutzkiller/weather-app:v1.0.${{ github.run_number }} && \
             docker run -d -p 5000:5000 nutzkiller/weather-app:v1.0.${{ github.run_number }} && \
             docker ps"
