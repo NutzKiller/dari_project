@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Build Pipeline
 
 on:
   push:
@@ -62,46 +62,3 @@ jobs:
           tags: |
             nutzkiller/weather-app:latest
             nutzkiller/weather-app:${{ env.VERSION }}
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Download version artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: version
-          path: .
-
-      - name: Read version
-        id: read_version
-        run: |
-          VERSION=$(cat version.txt)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Deploy to EC2
-        run: |
-          echo "${{ secrets.EC2_KEY }}" > key.pem
-          chmod 600 key.pem
-          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
-            export PATH=\$PATH:/usr/sbin:/usr/bin:/sbin:/bin && \
-            if [ -f /etc/debian_version ] || [ -f /etc/lsb-release ]; then \
-              sudo apt-get update && sudo apt-get install -y docker.io; \
-            elif [ -f /etc/redhat-release ]; then \
-              sudo yum update -y && sudo yum install -y docker; \
-            elif [ -f /etc/system-release ] && grep -q 'Amazon Linux' /etc/system-release; then \
-              sudo yum update -y && sudo yum install -y docker; \
-            else \
-              echo 'Unsupported OS'; exit 1; \
-            fi && \
-            sudo systemctl start docker && \
-            sudo usermod -aG docker \$USER && newgrp docker && \
-            docker --version && \
-            docker pull nutzkiller/weather-app:${{ env.VERSION }} && \
-            docker run -d -p 5000:5000 nutzkiller/weather-app:${{ env.VERSION }} && \
-            docker ps"
-          rm -f key.pem
