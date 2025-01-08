@@ -18,7 +18,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: version
-          path: .
+          path: ./  # Make sure it's saved in the current directory
 
       - name: Read version
         id: read_version
