@@ -29,7 +29,7 @@ jobs:
         run: |
           VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.${{ github.run_number }}")
           echo "Latest version: $VERSION"
-          echo "$VERSION" > version.txt
+          echo "$VERSION" > version.txt  # This writes the version to version.txt
 
       - name: Upload version artifact
         uses: actions/upload-artifact@v3
