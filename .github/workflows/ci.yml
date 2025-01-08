@@ -102,5 +102,6 @@ jobs:
             sudo usermod -aG docker \$USER && newgrp docker && \
             docker --version && \
             docker pull nutzkiller/weather-app:${{ env.VERSION }} && \
-            docker run -d nutzkiller/weather-app:${{ env.VERSION }}"
+            docker run -d -p 5000:5000 nutzkiller/weather-app:${{ env.VERSION }} && \
+            docker ps"
           rm -f key.pem
