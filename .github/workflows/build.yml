@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: version
-          path: version.txt
+          path: version.txt  # Ensure this is the correct artifact path
 
       - name: Increment version using GitHub Actions run number
         id: increment_version
