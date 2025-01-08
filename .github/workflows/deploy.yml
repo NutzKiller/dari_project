@@ -14,10 +14,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Read version from environment
+      - name: Read version from GitHub run number
         id: read_version
         run: |
-          VERSION="${{ env.VERSION }}"  # Use the version from the environment variable set in Build Pipeline
+          VERSION="v1.0.${{ github.run_number }}"  # Use the run number directly for version
           echo "VERSION=$VERSION" >> $GITHUB_ENV  # Set the version as an environment variable
 
       - name: Deploy to EC2
@@ -38,7 +38,7 @@ jobs:
             sudo systemctl start docker && \
             sudo usermod -aG docker \$USER && newgrp docker && \
             docker --version && \
-            docker pull nutzkiller/weather-app:${{ env.VERSION }} && \
-            docker run -d -p 5000:5000 nutzkiller/weather-app:${{ env.VERSION }} && \
+            docker pull nutzkiller/weather-app:v1.0.${{ github.run_number }} && \
+            docker run -d -p 5000:5000 nutzkiller/weather-app:v1.0.${{ github.run_number }} && \
             docker ps"
           rm -f key.pem

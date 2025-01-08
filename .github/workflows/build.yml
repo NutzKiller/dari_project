@@ -33,12 +33,12 @@ jobs:
 
       - name: Create and push new version tag
         run: |
-          TAG_EXISTS=$(git ls-remote --tags origin "refs/tags/${{ env.VERSION }}")
+          TAG_EXISTS=$(git ls-remote --tags origin "refs/tags/v1.0.${{ github.run_number }}")
           if [ -z "$TAG_EXISTS" ]; then
-            git tag ${{ env.VERSION }}
-            git push origin ${{ env.VERSION }}
+            git tag v1.0.${{ github.run_number }}
+            git push origin v1.0.${{ github.run_number }}
           else
-            echo "Tag ${{ env.VERSION }} already exists on remote. Skipping tag creation."
+            echo "Tag v1.0.${{ github.run_number }} already exists on remote. Skipping tag creation."
           fi
 
       - name: Build and push Docker image
@@ -48,4 +48,4 @@ jobs:
           push: true
           tags: |
             nutzkiller/weather-app:latest
-            nutzkiller/weather-app:${{ env.VERSION }}
+            nutzkiller/weather-app:v1.0.${{ github.run_number }}
