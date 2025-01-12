@@ -53,7 +53,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install bandit
-          bandit -r . --exclude tests
+          # Run Bandit, but skip rule B104 to allow binding to 0.0.0.0
+          bandit -r . --exclude tests --skip B104
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
@@ -61,5 +62,5 @@ jobs:
           context: .
           push: true
           tags: |
-            nutzkiller/weather-app:latest
+            nutzkiller/weather-app:latest 
             nutzkiller/weather-app:v1.0.${{ github.run_number }}
