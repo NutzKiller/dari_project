@@ -28,7 +28,9 @@ def index():
                 else:
                     weather_data = {"error": "City not found or invalid API key."}
             except requests.exceptions.RequestException as e:
-                weather_data = {"error": str(e)}
+                weather_data = {"error": "API is currently unavailable. Please try again later."}
+        else:
+            weather_data = {"error": "Please enter both city and country."}
 
     return render_template('index.html', weather=weather_data, city_country=city_country, winter_fact=winter_fact)
 
