@@ -14,37 +14,49 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Read version from GitHub run number
-        id: read_version
+      - name: Set version from GitHub run number
+        id: set_version
         run: |
-          VERSION="v1.0.${{ github.run_number }}"  # Use the run number directly for version
-          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Set the version as an environment variable
+          VERSION="v1.0.${{ github.run_number }}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Deploy to EC2
         run: |
+          # Create SSH key file from Secret
           echo "${{ secrets.EC2_KEY }}" > key.pem
           chmod 600 key.pem
-          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
-            export PATH=\$PATH:/usr/sbin:/usr/bin:/sbin:/bin && \
-            if [ -f /etc/debian_version ] || [ -f /etc/lsb-release ]; then \
-              sudo apt-get update && sudo apt-get install -y docker.io; \
-            elif [ -f /etc/redhat-release ]; then \
-              sudo yum update -y && sudo yum install -y docker; \
-            elif [ -f /etc/system-release ] && grep -q 'Amazon Linux' /etc/system-release; then \
-              sudo yum update -y && sudo yum install -y docker; \
-            else \
-              echo 'Unsupported OS'; exit 1; \
-            fi && \
-            sudo systemctl start docker && \
-            sudo usermod -aG docker \$USER && newgrp docker && \
-            docker --version && \
-            # Stop any container using port 5000 if it exists
-            EXISTING_CONTAINER=\$(sudo docker ps -q -f "publish=5000"); \
-            if [ -n "\$EXISTING_CONTAINER" ]; then \
-              echo 'Stopping existing container using port 5000...'; \
-              sudo docker stop \$EXISTING_CONTAINER; \
-            fi && \
-            docker pull nutzkiller/weather-app:v1.0.${{ github.run_number }} && \
-            docker run -d -p 5000:5000 nutzkiller/weather-app:v1.0.${{ github.run_number }} && \
-            docker ps"
+
+          # Connect to the EC2 instance and deploy
+          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            # Update OS and install Docker
+            export PATH=$PATH:/usr/sbin:/usr/bin:/sbin:/bin
+            if [ -f /etc/debian_version ] || [ -f /etc/lsb-release ]; then
+              sudo apt-get update && sudo apt-get install -y docker.io
+            elif [ -f /etc/redhat-release ]; then
+              sudo yum update -y && sudo yum install -y docker
+            elif [ -f /etc/system-release ] && grep -q 'Amazon Linux' /etc/system-release; then
+              sudo yum update -y && sudo yum install -y docker
+            else
+              echo 'Unsupported OS'; exit 1
+            fi
+
+            # Start Docker service
+            sudo systemctl start docker
+            sudo usermod -aG docker $USER
+            newgrp docker
+
+            # Stop existing container on port 5000
+            EXISTING_CONTAINER=$(sudo docker ps -q -f "publish=5000")
+            if [ -n "$EXISTING_CONTAINER" ]; then
+              echo 'Stopping existing container using port 5000...'
+              sudo docker stop $EXISTING_CONTAINER
+            fi
+
+            # Pull and run the Docker image
+            docker pull nutzkiller/weather-app:v1.0.${{ github.run_number }}
+            docker run -d -p 5000:5000 nutzkiller/weather-app:v1.0.${{ github.run_number }}
+            docker ps
+          EOF
+
+          # Remove SSH key file for security
           rm -f key.pem
