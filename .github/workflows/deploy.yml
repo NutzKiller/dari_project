@@ -14,21 +14,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Run SSH command using EC2 private key from GitHub secrets
+      - name: Read version from GitHub run number
+        id: read_version
         run: |
-          # Set up SSH configuration
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          
-          # Add the EC2 host to the known hosts to prevent SSH authenticity warning
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          VERSION="v1.0.${{ github.run_number }}"  # Use the run number directly for version
+          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Set the version as an environment variable
 
-          # Debugging output to verify the private key and permissions
-          ls -al ~/.ssh
-
-          # Run the SSH command with verbose logging for debugging
-          ssh -vvv -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -o ChallengeResponseAuthentication=no -o PubkeyAuthentication=yes ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
+      - name: Deploy to EC2
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > key.pem
+          chmod 600 key.pem
+          ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
             export PATH=\$PATH:/usr/sbin:/usr/bin:/sbin:/bin && \
             if [ -f /etc/debian_version ] || [ -f /etc/lsb-release ]; then \
               sudo apt-get update && sudo apt-get install -y docker.io; \
@@ -42,18 +38,13 @@ jobs:
             sudo systemctl start docker && \
             sudo usermod -aG docker \$USER && newgrp docker && \
             docker --version && \
-            EXISTING_CONTAINER=\$(sudo docker ps -q -f 'publish=5000'); \
-            if [ -n \"\$EXISTING_CONTAINER\" ]; then \
+            # Stop any container using port 5000 if it exists
+            EXISTING_CONTAINER=\$(sudo docker ps -q -f "publish=5000"); \
+            if [ -n "\$EXISTING_CONTAINER" ]; then \
               echo 'Stopping existing container using port 5000...'; \
               sudo docker stop \$EXISTING_CONTAINER; \
             fi && \
-            docker pull nutzkiller/weather-app:v1.0.28 && \
-            docker run -d -p 5000:5000 nutzkiller/weather-app:v1.0.28 && \
+            docker pull nutzkiller/weather-app:v1.0.${{ github.run_number }} && \
+            docker run -d -p 5000:5000 nutzkiller/weather-app:v1.0.${{ github.run_number }} && \
             docker ps"
-
-          # Clean up the private key file
-          rm -f ~/.ssh/id_rsa
-        env:
-          EC2_USER: ${{ secrets.EC2_USER }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-        shell: /usr/bin/bash -e {0}
+          rm -f key.pem
