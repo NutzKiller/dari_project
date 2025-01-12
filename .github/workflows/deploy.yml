@@ -21,7 +21,7 @@ jobs:
           chmod 600 actions.pem
 
           # Run the SSH command
-          ssh -i actions.pem -o StrictHostKeyChecking=no -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -o ChallengeResponseAuthentication=no -o PubkeyAuthentication=yes ${EC2_USER}@${EC2_HOST} "
+          ssh -i actions.pem -o StrictHostKeyChecking=no -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -o ChallengeResponseAuthentication=no -o PubkeyAuthentication=yes ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
             export PATH=\$PATH:/usr/sbin:/usr/bin:/sbin:/bin && \
             if [ -f /etc/debian_version ] || [ -f /etc/lsb-release ]; then \
               sudo apt-get update && sudo apt-get install -y docker.io; \
