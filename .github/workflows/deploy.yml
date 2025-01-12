@@ -48,3 +48,9 @@ jobs:
             docker run -d -p 5000:5000 nutzkiller/weather-app:v1.0.${{ github.run_number }} && \
             docker ps"
           rm -f key.pem
+
+      # Test the Application with curl
+      - name: Test Application Endpoint
+        run: |
+          sleep 10  # Wait for the application to start
+          curl -v http://${{ secrets.EC2_HOST }}:5000 || exit 1
