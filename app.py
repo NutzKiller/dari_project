@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 import requests
+import os
 
 app = Flask(__name__)
 
@@ -18,15 +19,20 @@ def index():
 
         if city and country:
             city_country = f"{city}, {country}"
-            # Fetch weather data from OpenWeatherMap
+            # Fetch weather data from OpenWeatherMap with timeout
             url = f"http://api.openweathermap.org/data/2.5/weather?q={city},{country}&appid={API_KEY}&units=metric"
-            response = requests.get(url)
-            if response.status_code == 200:
-                weather_data = response.json()
-            else:
-                weather_data = {"error": "City not found or invalid API key."}
+            try:
+                response = requests.get(url, timeout=5)  # Added timeout
+                if response.status_code == 200:
+                    weather_data = response.json()
+                else:
+                    weather_data = {"error": "City not found or invalid API key."}
+            except requests.exceptions.RequestException as e:
+                weather_data = {"error": str(e)}
 
     return render_template('index.html', weather=weather_data, city_country=city_country, winter_fact=winter_fact)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    # Use environment variable to toggle debug mode
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug_mode, host='0.0.0.0')
