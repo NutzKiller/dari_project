@@ -16,13 +16,16 @@ jobs:
 
       - name: Run SSH command using EC2 private key from GitHub secrets
         run: |
-          # Save the EC2 private key directly from GitHub secrets into the ssh-agent
+          # Set up SSH configuration
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
+          
           # Add the EC2 host to the known hosts to prevent SSH authenticity warning
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+          # Debugging output to verify the private key and permissions
+          ls -al ~/.ssh
 
           # Run the SSH command
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -o ChallengeResponseAuthentication=no -o PubkeyAuthentication=yes ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
@@ -47,7 +50,7 @@ jobs:
             docker pull nutzkiller/weather-app:v1.0.28 && \
             docker run -d -p 5000:5000 nutzkiller/weather-app:v1.0.28 && \
             docker ps"
-          
+
           # Clean up the private key file
           rm -f ~/.ssh/id_rsa
         env:
