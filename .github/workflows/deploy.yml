@@ -78,5 +78,6 @@ jobs:
             docker ps"
       - name: Curl Test
         run: |
+          sleep 5
           echo "Testing the deployed application using curl..."
           curl -sSf http://${{ secrets.EC2_HOST }}:5000 || { echo 'Curl test failed!'; exit 1; }
