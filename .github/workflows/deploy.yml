@@ -16,7 +16,7 @@ jobs:
 
       - name: Use version from Build Pipeline
         run: |
-          VERSION="${{ github.event.workflow_run.conclusion }}-${{ github.event.workflow_run.head_commit.id }}"
+          VERSION="v1.0.${{ github.event.workflow_run.run_number }}"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Version to deploy: $VERSION"
       
