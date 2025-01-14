@@ -17,7 +17,7 @@ jobs:
       - name: Get version from Build Pipeline
         id: get_version
         run: |
-          VERSION="v1.0.${{ github.run_number }}"  # Make sure the version matches what's pushed
+          VERSION="v1.0.${{ github.run_number }}"  # Ensure the version matches what's pushed
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Version to deploy: $VERSION"
 
@@ -66,7 +66,7 @@ jobs:
               sudo docker stop \$EXISTING_CONTAINER && sudo docker rm \$EXISTING_CONTAINER; \
             fi && \
             
-            # Remove existing image and pull the latest version
+            # Remove existing image and pull the correct version
             if docker images nutzkiller/weather-app:${{ env.VERSION }} -q | grep -q .; then \
               echo 'Removing existing image...'; \
               docker rmi nutzkiller/weather-app:${{ env.VERSION }}; \
