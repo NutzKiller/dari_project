@@ -17,8 +17,8 @@ jobs:
       - name: Get version from Build Pipeline
         id: get_version
         run: |
-          VERSION="v1.0.${{ github.run_number }}"  # Use GitHub run number directly
-          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Save the version to the environment
+          VERSION="v1.0.${{ github.run_number }}"  # Make sure the version matches what's pushed
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Version to deploy: $VERSION"
 
       - name: Deploy to EC2
