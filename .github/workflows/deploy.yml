@@ -14,13 +14,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Get version from Build Pipeline
-        id: get_version
+      - name: Use version from Build Pipeline
         run: |
-          VERSION="v1.0.${{ github.run_number }}"  # Ensure the version matches what's pushed
+          VERSION="${{ github.event.workflow_run.conclusion }}-${{ github.event.workflow_run.head_commit.id }}"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Version to deploy: $VERSION"
-
+      
       - name: Deploy to EC2
         env:
           VERSION: ${{ env.VERSION }}
