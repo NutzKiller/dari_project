@@ -17,7 +17,7 @@ jobs:
       - name: Get version from Build Pipeline
         id: get_version
         run: |
-          VERSION="v1.0.${{ github.event.workflow_run.head_run_number }}"  # Correct way to get the run number
+          VERSION="v1.0.${{ github.run_number }}"  # Use GitHub run number directly
           echo "VERSION=$VERSION" >> $GITHUB_ENV  # Save the version to the environment
           echo "Version to deploy: $VERSION"
 
