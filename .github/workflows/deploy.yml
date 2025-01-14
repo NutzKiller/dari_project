@@ -17,14 +17,21 @@ jobs:
       - name: Get version from Build Pipeline
         id: get_version
         run: |
-          VERSION="v1.0.${{ github.event.workflow_run.head_run_number }}"  # Get the run number from the build pipeline run
-          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Set the version as an environment variable
+          VERSION="v1.0.${{ github.event.workflow_run.head_run_number }}"  # Correct way to get the run number
+          echo "VERSION=$VERSION" >> $GITHUB_ENV  # Save the version to the environment
           echo "Version to deploy: $VERSION"
 
       - name: Deploy to EC2
         env:
           VERSION: ${{ env.VERSION }}
         run: |
+          if [ -z "${{ env.VERSION }}" ]; then
+            echo "ERROR: VERSION is not set correctly!"
+            exit 1
+          fi
+          
+          echo "Deploying version $VERSION"
+          
           # Save the SSH key to a file
           echo "${{ secrets.EC2_KEY }}" > key.pem
           chmod 600 key.pem
